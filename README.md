@@ -46,6 +46,7 @@ Bienvenue sur le dépôt du portfolio interactif et vitrine technique de **ANDRI
    - Animation vidéo interactive chapitrée (Identité, Compétences DevOps, Projets, Diplômes & Expériences, Contact).
    - Moteur sonore Web Audio API intégré (synthèse en temps réel sans latence avec contrôles de son et volume).
    - Scrubber temporel interactif, vitesse de lecture ajustable (0.75x à 1.5x), mode plein écran et raccourcis clavier.
+   - **Bouton dédié « Retourner à la page d'accueil »** à la fin de la vidéo et dans le bandeau de contrôle pour revenir instantanément au portfolio en haut de page.
 
 3. **📄 Visualiseur & Générateur de CV Haute Fidélité** :
    - Modal de CV aux normes internationales avec mise en page d'impression optimisée (`@media print`).

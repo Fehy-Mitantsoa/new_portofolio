@@ -5,34 +5,20 @@ import {
   GitPullRequest,
   Terminal,
   Cpu,
-  Play,
   CheckCircle2,
   Copy,
   Check,
   Workflow,
   ShieldCheck,
-  HardDrive,
-  RefreshCw,
 } from 'lucide-react';
 import { DEVOPS_MODULES } from '../data/portfolioData';
 
 export const DevOpsLab: React.FC = () => {
   const [selectedModuleId, setSelectedModuleId] = useState<string>('docker');
-  const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
-  const [executionLogs, setExecutionLogs] = useState<string>('');
 
   const activeModule =
     DEVOPS_MODULES.find((m) => m.id === selectedModuleId) || DEVOPS_MODULES[0];
-
-  const handleRunCommand = () => {
-    setIsExecuting(true);
-    setExecutionLogs('Executing command in sandboxed environment...');
-    setTimeout(() => {
-      setExecutionLogs(activeModule.outputSample || 'Operation completed successfully.');
-      setIsExecuting(false);
-    }, 600);
-  };
 
   const handleCopyCommand = () => {
     if (activeModule.commandSample) {
@@ -87,10 +73,7 @@ export const DevOpsLab: React.FC = () => {
               return (
                 <button
                   key={module.id}
-                  onClick={() => {
-                    setSelectedModuleId(module.id);
-                    setExecutionLogs('');
-                  }}
+                  onClick={() => setSelectedModuleId(module.id)}
                   className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-200 cursor-pointer ${
                     isSelected
                       ? 'bg-[#0a2019] border-emerald-500/70 shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-500/40'
@@ -187,26 +170,20 @@ export const DevOpsLab: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handleCopyCommand}
-                      className="p-1 rounded hover:bg-[#0e2920] text-emerald-400 hover:text-white transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 rounded bg-[#0d2820] hover:bg-[#12362b] text-emerald-300 hover:text-white border border-emerald-500/30 text-[11px] font-mono transition-colors cursor-pointer"
                       title="Copier la commande"
                     >
                       {copiedCode ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-emerald-400 font-sans text-[10px]">Copié</span>
+                        </>
                       ) : (
-                        <Copy className="w-3.5 h-3.5" />
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="font-sans text-[10px]">Copier</span>
+                        </>
                       )}
-                    </button>
-                    <button
-                      onClick={handleRunCommand}
-                      disabled={isExecuting}
-                      className="flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      {isExecuting ? (
-                        <RefreshCw className="w-3 h-3 animate-spin" />
-                      ) : (
-                        <Play className="w-3 h-3 fill-current" />
-                      )}
-                      <span>{isExecuting ? 'Exécution...' : 'Tester'}</span>
                     </button>
                   </div>
                 </div>
@@ -215,17 +192,13 @@ export const DevOpsLab: React.FC = () => {
                 <div className="p-4 font-mono text-xs text-emerald-100 space-y-3 min-h-[140px] select-text">
                   <div className="flex items-center gap-2 text-emerald-300">
                     <span className="text-emerald-500/80 font-bold">fenomirindra@server:~$</span>
-                    <span className="text-emerald-100">{activeModule.commandSample}</span>
+                    <span className="text-emerald-100 font-bold">{activeModule.commandSample}</span>
                   </div>
 
-                  {executionLogs ? (
-                    <pre className="text-emerald-300 whitespace-pre-wrap font-mono text-[11px] leading-relaxed p-2.5 rounded-lg bg-[#071712] border border-[#163c2f] text-emerald-300/90">
-                      {executionLogs}
+                  {activeModule.outputSample && (
+                    <pre className="text-emerald-300 whitespace-pre-wrap font-mono text-[11px] leading-relaxed p-3 rounded-xl bg-[#071712] border border-[#163c2f] text-emerald-300/90 shadow-inner">
+                      {activeModule.outputSample}
                     </pre>
-                  ) : (
-                    <div className="text-emerald-400/50 text-[11px] italic">
-                      // Cliquez sur "Tester" ci-dessus pour simuler l'exécution de la commande DevOps.
-                    </div>
                   )}
                 </div>
               </div>

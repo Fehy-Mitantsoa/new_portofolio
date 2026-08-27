@@ -24,6 +24,8 @@ import {
   CheckCircle2,
   ExternalLink,
   ShieldCheck,
+  Home,
+  ArrowLeft,
 } from 'lucide-react';
 import { PERSONAL_INFO, TECH_SKILLS, DEVOPS_MODULES, PROJECTS_LIST, EXPERIENCES_LIST, EDUCATION_LIST } from '../data/portfolioData';
 import { soundEngine } from '../utils/cinematicAudio';
@@ -94,21 +96,24 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
   useEffect(() => {
     if (!isOpen || !isPlaying) return;
 
-    const currentScene = SCENES[currentSceneIndex];
+    const safeIndex = Math.max(0, Math.min(SCENES.length - 1, currentSceneIndex || 0));
+    const currentScene = SCENES[safeIndex] || SCENES[0];
+    const duration = currentScene?.duration || 8;
     const updateIntervalMs = 50;
-    const step = (updateIntervalMs / (currentScene.duration * 1000)) * playbackSpeed;
+    const step = (updateIntervalMs / (duration * 1000)) * playbackSpeed;
 
     const interval = window.setInterval(() => {
       setSceneProgress((prev) => {
         const next = prev + step;
         if (next >= 1) {
           // Go to next scene
-          if (currentSceneIndex < SCENES.length - 1) {
-            setCurrentSceneIndex((idx) => idx + 1);
+          if (safeIndex < SCENES.length - 1) {
+            setCurrentSceneIndex((idx) => Math.min(SCENES.length - 1, (idx || 0) + 1));
             soundEngine.playWhoosh();
             return 0;
           } else {
             // Finished loop or pause at end
+            setIsPlaying(false);
             return 1;
           }
         }
@@ -146,14 +151,15 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
   useEffect(() => {
     if (currentSceneIndex === 3) {
       const projTimer = setInterval(() => {
-        setActiveProjectIndex((prev) => (prev + 1) % Math.min(3, PROJECTS_LIST.length));
+        setActiveProjectIndex((prev) => (prev + 1) % Math.max(1, Math.min(3, PROJECTS_LIST.length)));
       }, 3000 / playbackSpeed);
       return () => clearInterval(projTimer);
     }
   }, [currentSceneIndex, playbackSpeed]);
 
   const goToScene = (index: number) => {
-    setCurrentSceneIndex(index);
+    const safeIdx = Math.max(0, Math.min(SCENES.length - 1, index || 0));
+    setCurrentSceneIndex(safeIdx);
     setSceneProgress(0);
     soundEngine.playWhoosh();
   };
@@ -176,10 +182,19 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
     }
   };
 
-  // Calculate global elapsed time
-  const currentSceneOffset = SCENES.slice(0, currentSceneIndex).reduce((acc, s) => acc + s.duration, 0);
-  const totalElapsed = currentSceneOffset + sceneProgress * SCENES[currentSceneIndex].duration;
-  const globalPercentage = (totalElapsed / TOTAL_DURATION) * 100;
+  // Return to home page action
+  const handleReturnHome = () => {
+    soundEngine.playChime(520);
+    onClose();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Calculate global elapsed time safely
+  const safeSceneIndex = Math.max(0, Math.min(SCENES.length - 1, currentSceneIndex || 0));
+  const activeScene = SCENES[safeSceneIndex] || SCENES[0];
+  const currentSceneOffset = SCENES.slice(0, safeSceneIndex).reduce((acc, s) => acc + (s?.duration || 0), 0);
+  const totalElapsed = currentSceneOffset + (sceneProgress || 0) * (activeScene?.duration || 8);
+  const globalPercentage = TOTAL_DURATION > 0 ? Math.min(100, Math.max(0, (totalElapsed / TOTAL_DURATION) * 100)) : 0;
 
   if (!isOpen) return null;
 
@@ -221,12 +236,23 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
               <span className="text-emerald-300">16:9 CINEMATIC</span>
             </div>
             <div className="hidden md:flex items-center gap-2 text-xs text-emerald-200/80 font-mono">
-              <span className="text-emerald-400 font-bold">{SCENES[currentSceneIndex].chapterLabel}</span>
-              <span>— {SCENES[currentSceneIndex].title}</span>
+              <span className="text-emerald-400 font-bold">{activeScene.chapterLabel}</span>
+              <span>— {activeScene.title}</span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Direct Home Return Button in Header */}
+            <button
+              id="modal-header-home-btn"
+              onClick={handleReturnHome}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 hover:text-white border border-emerald-500/40 text-xs font-bold transition-all cursor-pointer shadow-sm hover:scale-105"
+              title="Retourner à la page d'accueil"
+            >
+              <Home className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="hidden sm:inline">Page d'accueil</span>
+            </button>
+
             <button
               onClick={toggleMute}
               className="p-2 rounded-xl bg-black/60 hover:bg-emerald-950/80 text-emerald-300 hover:text-white border border-emerald-500/30 transition-colors cursor-pointer"
@@ -647,13 +673,26 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
                   </button>
                 </div>
 
-                <div className="pt-2 flex justify-center gap-3">
+                {/* Post-Video Call-To-Action & Return to Home Controls */}
+                <div className="pt-3 flex flex-wrap justify-center items-center gap-3">
                   <button
-                    onClick={handleRestart}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-950/80 transition-all cursor-pointer"
+                    id="video-end-return-home-btn"
+                    onClick={handleReturnHome}
+                    className="inline-flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-300 hover:from-emerald-300 hover:to-teal-200 text-slate-950 font-black text-sm shadow-xl shadow-emerald-950/90 transition-all hover:scale-105 cursor-pointer ring-2 ring-emerald-300/80 group"
                   >
-                    <RotateCcw className="w-4 h-4" />
-                    <span>Rejouer la Présentation Vidéo</span>
+                    <div className="w-5 h-5 rounded-lg bg-black/20 flex items-center justify-center text-slate-950 group-hover:scale-110 transition-transform">
+                      <Home className="w-3.5 h-3.5 fill-current" />
+                    </div>
+                    <span>Retourner à la page d'accueil</span>
+                  </button>
+
+                  <button
+                    id="video-end-replay-btn"
+                    onClick={handleRestart}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#062016] hover:bg-[#0d3425] text-emerald-200 hover:text-white border border-emerald-500/50 font-bold text-sm shadow-md transition-all cursor-pointer hover:scale-102"
+                  >
+                    <RotateCcw className="w-4 h-4 text-emerald-400" />
+                    <span>Rejouer la Présentation</span>
                   </button>
                 </div>
               </motion.div>
@@ -746,7 +785,7 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
               ))}
             </div>
 
-            {/* Right Controls: Speed Selector */}
+            {/* Right Controls: Speed Selector & Home quick return */}
             <div className="flex items-center gap-2">
               <div className="flex items-center bg-black/60 border border-emerald-500/30 rounded-lg p-0.5 text-[10px] font-mono">
                 {[1, 1.5, 2].map((spd) => (
@@ -761,6 +800,15 @@ export const CinematicShowcaseModal: React.FC<CinematicShowcaseModalProps> = ({
                   </button>
                 ))}
               </div>
+
+              <button
+                onClick={handleReturnHome}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 hover:text-white border border-emerald-500/40 text-[11px] font-bold transition-all cursor-pointer"
+                title="Retourner à la page d'accueil"
+              >
+                <Home className="w-3 h-3 text-emerald-400" />
+                <span className="hidden sm:inline">Accueil</span>
+              </button>
             </div>
           </div>
         </div>
