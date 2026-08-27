@@ -7,7 +7,7 @@ import {
   LanguageItem,
   QualityItem,
 } from '../types';
-import profilePhoto from '../assets/images/fenomirindra_profile_1787747146934.jpg';
+import profilePhoto from '../assets/images/1481H-F.jpeg';
 import heroScreenBg from '../assets/images/hero_screen_bg_1787747163211.jpg';
 
 export const PERSONAL_INFO = {

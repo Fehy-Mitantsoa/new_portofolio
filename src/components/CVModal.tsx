@@ -1,7 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
   X,
-  Printer,
   FileDown,
   Mail,
   Phone,
@@ -11,6 +10,7 @@ import {
   Sparkles,
   ExternalLink,
 } from 'lucide-react';
+import cvPdf from '../assets/doc/ANDRIAMIFEHY.pdf';
 import {
   PERSONAL_INFO,
   EDUCATION_LIST,
@@ -27,12 +27,15 @@ interface CVModalProps {
 }
 
 export const CVModal: React.FC<CVModalProps> = ({ isOpen, onClose }) => {
-  const printRef = useRef<HTMLDivElement>(null);
-
   if (!isOpen) return null;
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownloadCv = () => {
+    const link = document.createElement('a');
+    link.href = cvPdf;
+    link.download = 'CV_ANDRIAMIFEHY_Fenomirindra.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -54,11 +57,11 @@ export const CVModal: React.FC<CVModalProps> = ({ isOpen, onClose }) => {
 
           <div className="flex items-center gap-2">
             <button
-              onClick={handlePrint}
+              onClick={handleDownloadCv}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shadow-md transition-colors cursor-pointer"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>Imprimer / Sauvegarder PDF</span>
+              <FileDown className="w-3.5 h-3.5" />
+              <span>Télécharger le CV (PDF)</span>
             </button>
             <button
               onClick={onClose}
@@ -72,7 +75,6 @@ export const CVModal: React.FC<CVModalProps> = ({ isOpen, onClose }) => {
 
         {/* CV Document Container */}
         <div
-          ref={printRef}
           className="p-6 sm:p-10 overflow-y-auto space-y-8 bg-[#0a2019] text-emerald-100 print:bg-white print:text-slate-900 print:p-6 print:overflow-visible text-left"
         >
           {/* Top CV Header: Left Teal Banner Style */}
